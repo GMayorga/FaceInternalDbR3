@@ -400,14 +400,14 @@ public class MainActivity extends AppCompatActivity {
 
       if (prediction != 1 || acceptanceLevel > MIDDLE_ACCEPT_LEVEL) {
           // Display on text view, not matching or unknown person.
-          tv.setText("Unknown." + "\nAcceptance Level Too High: " + acceptanceLevel);
+          tv.setText("No Match Found." + "\nAcceptance Level Too High: " + acceptanceLevel);
           matchText = tv.getText().toString();
 
           result_information.setText("");
       } else if (acceptanceLevel >= ACCEPT_LEVEL && acceptanceLevel <= MIDDLE_ACCEPT_LEVEL) {
           tv.setText(
-                  "Found a match but not sure. " +
-                          "\nWarning! Acceptable Level is high! " +
+                  "Potential Match." +
+                          "\nWarning! Acceptance Level high!" +
                           "\nPotential Match: " + personName +
                           "\n Acceptance Level: " + acceptanceLevel +
                           "\nPerson ID: " + personId +
@@ -423,7 +423,7 @@ public class MainActivity extends AppCompatActivity {
 
           // Display the information for the matching image.
           tv.setText(
-                  "A match is found: " + personName +
+                  "Match found:" + personName +
                           "\n Acceptance Level: " + acceptanceLevel +
                           "\nPerson ID: " + personId +
                           "\nPrediction Id: " + prediction
