@@ -21,9 +21,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".RegFaces"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".TrainFaces"
             android:screenOrientation="portrait" />
     </application>
