@@ -23,6 +23,8 @@
         <activity
             android:name=".TrainFaces"
             android:screenOrientation="portrait" />
+        <activity android:name=".DetailsActivity" />
+
     </application>
 
 </manifest>

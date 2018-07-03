@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
     int acceptanceLevel;
     int prediction;
     int personId;
+    String matchText;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -144,9 +145,6 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }imageView.setImageBitmap(bitmapSelectGallery);
 
-            //This is required in order to make notification appear automatically:
-            notifications();
-
             if (bitmapSelectGallery !=null) {
                 detectDisplayAndRecognize(bitmapSelectGallery);
             }
@@ -187,12 +185,6 @@ public class MainActivity extends AppCompatActivity {
 
                     //This is required in order to make notification appear automatically
                     //However, a delay is required because if it appears to soon on phone, it will not appear on Glass
-                    new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            notifications();
-                        }
-                    }, 2000);
 
                     detectDisplayAndRecognize(bitmapAutoGallery);
 
@@ -240,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
                 //setContentTitle needs to be updated to info about match
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setLargeIcon(finalBitmapPic)
-                .setContentTitle(personName)
+                .setContentTitle(matchText)
                 .setAutoCancel(true)
                 .setContentIntent(detailsPendingIntent)
                 .addAction(android.R.drawable.ic_menu_compass, "Details", detailsPendingIntent);
@@ -339,6 +331,7 @@ public class MainActivity extends AppCompatActivity {
      * @param dadosFace
      * @param greyMat
      */
+
     void recognize(opencv_core.Rect dadosFace, opencv_core.Mat greyMat, TextView tv) {
          personId = 0;
 
@@ -393,58 +386,69 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        }
 
-
-        // -----------------------------------------------------------------------------------------
-        //                         DISPLAY THE FACE RECOGNITION PREDICTION
-        // -----------------------------------------------------------------------------------------
         displayMatchInfo();
 
     }
-  public void displayMatchInfo(){
-        if (prediction != 1 || acceptanceLevel > MIDDLE_ACCEPT_LEVEL)
-        {
-            // Display on text view, not matching or unknown person.
-            tv.setText("Unknown." + "\nAcceptance Level Too High: " +acceptanceLevel);
-            result_information.setText("");
-        }
-        else if (acceptanceLevel >= ACCEPT_LEVEL && acceptanceLevel <= MIDDLE_ACCEPT_LEVEL)
-        {
-            tv.setText(
-                    "Found a match but not sure. " +
-                            "\nWarning! Acceptable Level is high! " +
-                            "\nPotential Match: " + personName +
-                            "\n Acceptance Level: " + acceptanceLevel  +
-                            "\nPerson ID: " + personId +
-                            "\nPrediction Id: " + prediction
-            );
-            result_information.setText("");
-        }
-        else
-        {
-            // faceRecognizer.setLabelInfo(0, "Angelina Jolie");
-            // faceRecognizer.getDefaultName().getString();
-            // faceRecognizer.getLabelInfo(0).getString();
 
-            // Display the information for the matching image.
-            tv.setText(
-                    "A match is found: " + personName +
-                    "\n Acceptance Level: " + acceptanceLevel  +
-                    "\nPerson ID: " + personId +
-                     "\nPrediction Id: " + prediction
-            );
 
-            if (personId >= 1) {
-                DatabaseAccess databaseAccess = DatabaseAccess.getInstance(getApplicationContext());
-                databaseAccess.open();
+  public void displayMatchInfo() {
 
-                String info = databaseAccess.getInformation(personId);
-                result_information.setText(info);
+      // -----------------------------------------------------------------------------------------
+      //                         DISPLAY THE FACE RECOGNITION PREDICTION
+      // -----------------------------------------------------------------------------------------
 
-                databaseAccess.close();
-            }
-        } // End of prediction.
 
-    }
+      if (prediction != 1 || acceptanceLevel > MIDDLE_ACCEPT_LEVEL) {
+          // Display on text view, not matching or unknown person.
+          tv.setText("Unknown." + "\nAcceptance Level Too High: " + acceptanceLevel);
+          matchText = tv.getText().toString();
+
+          result_information.setText("");
+      } else if (acceptanceLevel >= ACCEPT_LEVEL && acceptanceLevel <= MIDDLE_ACCEPT_LEVEL) {
+          tv.setText(
+                  "Found a match but not sure. " +
+                          "\nWarning! Acceptable Level is high! " +
+                          "\nPotential Match: " + personName +
+                          "\n Acceptance Level: " + acceptanceLevel +
+                          "\nPerson ID: " + personId +
+                          "\nPrediction Id: " + prediction
+          );
+          matchText = tv.getText().toString();
+
+          result_information.setText("");
+      } else {
+          // faceRecognizer.setLabelInfo(0, "Angelina Jolie");
+          // faceRecognizer.getDefaultName().getString();
+          // faceRecognizer.getLabelInfo(0).getString();
+
+          // Display the information for the matching image.
+          tv.setText(
+                  "A match is found: " + personName +
+                          "\n Acceptance Level: " + acceptanceLevel +
+                          "\nPerson ID: " + personId +
+                          "\nPrediction Id: " + prediction
+          );
+          matchText = tv.getText().toString();
+
+          if (personId >= 1) {
+              DatabaseAccess databaseAccess = DatabaseAccess.getInstance(getApplicationContext());
+              databaseAccess.open();
+
+              String info = databaseAccess.getInformation(personId);
+              result_information.setText(info);
+
+              databaseAccess.close();
+          }
+      } // End of prediction.
+
+      new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+          @Override
+          public void run() {
+              notifications();
+          }
+      }, 2000);
+
+  }
 
 
 
