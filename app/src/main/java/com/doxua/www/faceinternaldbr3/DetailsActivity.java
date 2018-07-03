@@ -12,9 +12,6 @@ import android.util.Log;
 
 public class DetailsActivity extends AppCompatActivity {
     //When the notification is clicked on the phone, a new screen will appear
-    //New screen is currently blank
-    //For Photos
-    Bitmap bitmapSelectGallery =null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
