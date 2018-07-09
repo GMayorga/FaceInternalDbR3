@@ -3,6 +3,7 @@ package com.doxua.www.faceinternaldbr3;
 import android.Manifest;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -19,6 +20,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -34,7 +36,9 @@ import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -84,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
     String info;
     String nothing = " ";
     String moreInfo;
+    public static final String EIGEN_FACES_CLASSIFIER = "eigenFacesClassifier.yml";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,20 +110,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.btTrain).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, TrainFaces.class));
-            }
-        });
 
         int cameraPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
         int storagePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
         mPermissionReady = cameraPermission == PackageManager.PERMISSION_GRANTED && storagePermission == PackageManager.PERMISSION_GRANTED;
 
-        if (!mPermissionReady)
+        if (!mPermissionReady){
             requirePermissions();
+
+        }
+
 
         instance = this;
 
@@ -211,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
         //This is used to open the new screen when the notification is clicked on the phone:
 
         Intent detailsIntent = new Intent(MainActivity.this, DetailsActivity.class);
-        detailsIntent.putExtra("EXTRA_DETAILS_ID", 42);
+        detailsIntent.putExtra("EXTRA_DETAILS_ID", NOTIFICATION_ID);
         PendingIntent detailsPendingIntent = PendingIntent.getActivity(MainActivity.this, NOTIFICATION_ID, detailsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
 
@@ -281,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
         //                                  FACE DETECTION
         // -----------------------------------------------------------------------------------------
         // Load the CascadeClassifier class to detect objects.
-        faceDetector = TrainFaces.loadClassifierCascade(MainActivity.this, R.raw.frontalface);
+        faceDetector = loadClassifierCascade(MainActivity.this, R.raw.frontalface);
         // Detect the face.
         faceDetector.detectMultiScale(greyMat, faces, 1.25f, 3, 1,
                 new opencv_core.Size(absoluteFaceSize, absoluteFaceSize),
@@ -344,7 +346,7 @@ public class MainActivity extends AppCompatActivity {
         // Find the correct root path where our trained face model is stored.
         personName = "Angelina Jolie";
         File photosFolder = new File(new File(Environment.getExternalStorageDirectory(), "saved_images"), "angelina_jolie");
-        File f = new File(photosFolder, TrainFaces.EIGEN_FACES_CLASSIFIER);
+        File f = new File(photosFolder, EIGEN_FACES_CLASSIFIER);
 
         // Loads a persisted model and state from a given XML or YAML file.
         faceRecognizer.read(f.getAbsolutePath());
@@ -492,5 +494,66 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+
+    /***********************************************************************************************
+     *
+     *
+     *                                      HELPER METHODS
+     *
+     *
+     **********************************************************************************************/
+
+    /**
+     * Load the CascadeClassifier for Face Detection.
+     * @param context
+     * @param resId
+     * @return
+     */
+    public static opencv_objdetect.CascadeClassifier loadClassifierCascade(Context context, int resId) {
+        FileOutputStream fos = null;
+        InputStream inputStream;
+
+        inputStream = context.getResources().openRawResource(resId);
+        File xmlDir = context.getDir("xml", Context.MODE_PRIVATE);
+        File cascadeFile = new File(xmlDir, "temp.xml");
+        try {
+            fos = new FileOutputStream(cascadeFile);
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                fos.write(buffer, 0, bytesRead);
+            }
+        } catch (IOException e) {
+//            Log.d(TAG, "Can\'t load the cascade file");
+            e.printStackTrace();
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        opencv_objdetect.CascadeClassifier detector = new opencv_objdetect.CascadeClassifier(cascadeFile.getAbsolutePath());
+        if (detector.isNull()) {
+//            Log.e(TAG, "Failed to load cascade classifier");
+            detector = null;
+        } else {
+//            Log.i(TAG, "Loaded cascade classifier from " + cascadeFile.getAbsolutePath());
+        }
+        // Delete the temporary directory.
+        cascadeFile.delete();
+        return detector;
     }
 }
