@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
     public static int NOTIFICATION_ID = 0;
     Bitmap bitmapSelectGallery =null;
     Bitmap bitmapAutoGallery;
-    Bitmap finalBitmapPic;
+    static Bitmap finalBitmapPic;
     GalleryObserver directoryFileObserver;
     private static MainActivity instance;
 
@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
     String nothing = " ";
     String moreInfo;
     public static final String EIGEN_FACES_CLASSIFIER = "eigenFacesClassifier.yml";
+    int defaultValue = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
             directoryFileObserver = new GalleryObserver("/storage/emulated/0/MyGlass/");
             directoryFileObserver.startWatching();
 
-            lastPhotoInGallery();
+//            lastPhotoInGallery();
     }
 
     private void openGallery() {
@@ -187,9 +188,6 @@ public class MainActivity extends AppCompatActivity {
                 if (bitmapAutoGallery != null) {
                     imageView.setImageBitmap(bitmapAutoGallery);
 
-                    //This is required in order to make notification appear automatically
-                    //However, a delay is required because if it appears to soon on phone, it will not appear on Glass
-
                     detectDisplayAndRecognize(bitmapAutoGallery);
 
                 }
@@ -210,10 +208,11 @@ public class MainActivity extends AppCompatActivity {
 
         //This is used to open the new screen when the notification is clicked on the phone:
 
-        Intent detailsIntent = new Intent(MainActivity.this, DetailsActivity.class);
-        detailsIntent.putExtra("EXTRA_DETAILS_ID", 1);
-        PendingIntent detailsPendingIntent = PendingIntent.getActivity(MainActivity.this, NOTIFICATION_ID, detailsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent detailsIntent = new Intent(MainActivity.this, MainActivity.class);
+        Log.d("PLAYGROUND", "Details ID: " + getIntent().getIntExtra("EXTRA_DETAILS_ID", defaultValue));
 
+        detailsIntent.putExtra("EXTRA_DETAILS_ID", NOTIFICATION_ID);
+        PendingIntent detailsPendingIntent = PendingIntent.getActivity(MainActivity.this, NOTIFICATION_ID, detailsIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
 
         //To determine what needs to be displayed
@@ -326,8 +325,8 @@ public class MainActivity extends AppCompatActivity {
         if (numFaces > 0) {
 
             recognize(faces.get(0), greyMat, tv);
-                    }
-                    else{
+        }
+        else{
             tv.setText("Unknown. No Face Found");
             matchText = tv.getText().toString();
             notifications();

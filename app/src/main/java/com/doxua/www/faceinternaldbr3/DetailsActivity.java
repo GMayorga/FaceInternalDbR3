@@ -16,25 +16,22 @@ import android.widget.TextView;
 
 public class DetailsActivity extends AppCompatActivity {
     //When the notification is clicked on the phone, a new screen will appear
-    private ImageView imageView;
-    private TextView tv;
-    private TextView result_information;
+
     public Button backMenu;
+    int defaultValue = 0;
+    int counter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
 
-        Log.d("PLAYGROUND", "Details ID: " + getIntent().getIntExtra("EXTRA_DETAILS_ID", -1));
-
+        Log.d("PLAYGROUND", "Details ID: " + getIntent().getIntExtra("EXTRA_DETAILS_ID", defaultValue));
+        counter =getIntent().getIntExtra("EXTRA_DETAILS_ID", defaultValue);
 
 
         menuButton();
     }
-
-
-
 
 
     public void menuButton(){
