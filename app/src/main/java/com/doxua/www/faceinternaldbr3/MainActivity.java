@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     public static int NOTIFICATION_ID = 0;
     Bitmap bitmapSelectGallery =null;
     Bitmap bitmapAutoGallery;
-    static Bitmap finalBitmapPic;
+    Bitmap finalBitmapPic;
     GalleryObserver directoryFileObserver;
     private static MainActivity instance;
 
@@ -80,8 +80,8 @@ public class MainActivity extends AppCompatActivity {
     int acceptanceLevel;
     int prediction;
     int personId;
-    static String matchText;
-    static String info;
+    String matchText;
+    String info;
     String nothing = " ";
     String moreInfo;
 
@@ -203,17 +203,18 @@ public class MainActivity extends AppCompatActivity {
         //This code is required to send notifications to the phone and Google Glass
         //Google Glass automatically will display phone notifications as part of its design
 
-        //This is used to open the new screen when the notification is clicked on the phone:
-
+        //Need to increase notification id by 1 in order to have multiple notifications displayed, otherwise notifications
+        //will overwrite previous notification
         NOTIFICATION_ID++;
+
+
+        //This is used to open the new screen when the notification is clicked on the phone:
 
         Intent detailsIntent = new Intent(MainActivity.this, DetailsActivity.class);
         detailsIntent.putExtra("EXTRA_DETAILS_ID", 42);
         PendingIntent detailsPendingIntent = PendingIntent.getActivity(MainActivity.this, NOTIFICATION_ID, detailsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        //Need to increase notification id by 1 in order to have multiple notifications displayed, otherwise notifications
-        //will overwrite previous notification
-        NOTIFICATION_ID++;
+
 
         //To determine what needs to be displayed
         if (bitmapSelectGallery !=null){
@@ -238,6 +239,7 @@ public class MainActivity extends AppCompatActivity {
                 .setAutoCancel(true)
                 .setContentIntent(detailsPendingIntent)
                 .setContentText(moreInfo)
+                .setAutoCancel(true)
                 .addAction(android.R.drawable.ic_menu_compass, "Details", detailsPendingIntent);
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -332,6 +334,7 @@ public class MainActivity extends AppCompatActivity {
      * Predict whether the choosing image is matching or not.
      * IMPORTANT.
      * @param dadosFace
+     * @param greyMat
      * @param greyMat
      */
 
