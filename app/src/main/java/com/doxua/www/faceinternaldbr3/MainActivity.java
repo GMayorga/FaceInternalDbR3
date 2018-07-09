@@ -51,10 +51,10 @@ import android.os.Handler;
 public class MainActivity extends AppCompatActivity {
     private boolean mPermissionReady;
     //For Photos
-    public static int NOTIFICATION_ID = 1;
+    public static int NOTIFICATION_ID = 0;
     Bitmap bitmapSelectGallery =null;
     Bitmap bitmapAutoGallery;
-    Bitmap finalBitmapPic;
+    static Bitmap finalBitmapPic;
     GalleryObserver directoryFileObserver;
     private static MainActivity instance;
 
@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
     // Views.
     private ImageView imageView;
     private TextView tv;
-    private TextView result_information;
+    static TextView result_information;
 
     // Face Detection.
     private opencv_objdetect.CascadeClassifier faceDetector;
@@ -80,7 +80,11 @@ public class MainActivity extends AppCompatActivity {
     int acceptanceLevel;
     int prediction;
     int personId;
-    String matchText;
+    static String matchText;
+    static String info;
+    String nothing = " ";
+    String moreInfo;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -200,14 +204,12 @@ public class MainActivity extends AppCompatActivity {
         //Google Glass automatically will display phone notifications as part of its design
 
         //This is used to open the new screen when the notification is clicked on the phone:
+
+        NOTIFICATION_ID++;
+
         Intent detailsIntent = new Intent(MainActivity.this, DetailsActivity.class);
         detailsIntent.putExtra("EXTRA_DETAILS_ID", 42);
-        PendingIntent detailsPendingIntent = PendingIntent.getActivity(
-                MainActivity.this,
-                0,
-                detailsIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT
-        );
+        PendingIntent detailsPendingIntent = PendingIntent.getActivity(MainActivity.this, NOTIFICATION_ID, detailsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         //Need to increase notification id by 1 in order to have multiple notifications displayed, otherwise notifications
         //will overwrite previous notification
@@ -235,6 +237,7 @@ public class MainActivity extends AppCompatActivity {
                 .setContentTitle(matchText)
                 .setAutoCancel(true)
                 .setContentIntent(detailsPendingIntent)
+                .setContentText(moreInfo)
                 .addAction(android.R.drawable.ic_menu_compass, "Details", detailsPendingIntent);
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -333,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
      */
 
     void recognize(opencv_core.Rect dadosFace, opencv_core.Mat greyMat, TextView tv) {
-         personId = 0;
+        personId = 0;
 
         // Find the correct root path where our trained face model is stored.
         personName = "Angelina Jolie";
@@ -351,7 +354,7 @@ public class MainActivity extends AppCompatActivity {
         faceRecognizer.predict(detectedFace, label, reliability);
 
         // Display on the text view what we found.
-         prediction = label.get(0);
+        prediction = label.get(0);
         acceptanceLevel = (int) reliability.get(0);
 
         if (prediction == 1 && acceptanceLevel < ACCEPT_LEVEL) {
@@ -391,64 +394,71 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-  public void displayMatchInfo() {
+    public void displayMatchInfo() {
 
-      // -----------------------------------------------------------------------------------------
-      //                         DISPLAY THE FACE RECOGNITION PREDICTION
-      // -----------------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------
+        //                         DISPLAY THE FACE RECOGNITION PREDICTION
+        // -----------------------------------------------------------------------------------------
 
 
-      if (prediction != 1 || acceptanceLevel > MIDDLE_ACCEPT_LEVEL) {
-          // Display on text view, not matching or unknown person.
-          tv.setText("No Match Found." + "\nAcceptance Level Too High: " + acceptanceLevel);
-          matchText = tv.getText().toString();
+        if (prediction != 1 || acceptanceLevel > MIDDLE_ACCEPT_LEVEL) {
+            // Display on text view, not matching or unknown person.
+            tv.setText("No Match Found." + "\nAcceptance Level Too High: " + acceptanceLevel);
+            matchText = tv.getText().toString();
 
-          result_information.setText("");
-      } else if (acceptanceLevel >= ACCEPT_LEVEL && acceptanceLevel <= MIDDLE_ACCEPT_LEVEL) {
-          tv.setText(
-                  "Potential Match." +
-                          "\nWarning! Acceptance Level high!" +
-                          "\nPotential Match: " + personName +
-                          "\n Acceptance Level: " + acceptanceLevel +
-                          "\nPerson ID: " + personId +
-                          "\nPrediction Id: " + prediction
-          );
-          matchText = tv.getText().toString();
 
-          result_information.setText("");
-      } else {
-          // faceRecognizer.setLabelInfo(0, "Angelina Jolie");
-          // faceRecognizer.getDefaultName().getString();
-          // faceRecognizer.getLabelInfo(0).getString();
+            result_information.setText(nothing);
+            moreInfo = result_information.getText().toString();
 
-          // Display the information for the matching image.
-          tv.setText(
-                  "Match found:" + personName +
-                          "\n Acceptance Level: " + acceptanceLevel +
-                          "\nPerson ID: " + personId +
-                          "\nPrediction Id: " + prediction
-          );
-          matchText = tv.getText().toString();
+        } else if (acceptanceLevel >= ACCEPT_LEVEL && acceptanceLevel <= MIDDLE_ACCEPT_LEVEL) {
+            tv.setText(
+                    "Potential Match." +
+                            "\nWarning! Acceptance Level high!" +
+                            "\nPotential Match: " + personName +
+                            "\n Acceptance Level: " + acceptanceLevel +
+                            "\nPerson ID: " + personId +
+                            "\nPrediction Id: " + prediction
+            );
+            matchText = tv.getText().toString();
 
-          if (personId >= 1) {
-              DatabaseAccess databaseAccess = DatabaseAccess.getInstance(getApplicationContext());
-              databaseAccess.open();
+            result_information.setText(nothing);
+            moreInfo = result_information.getText().toString();
 
-              String info = databaseAccess.getInformation(personId);
-              result_information.setText(info);
+        } else {
+            // faceRecognizer.setLabelInfo(0, "Angelina Jolie");
+            // faceRecognizer.getDefaultName().getString();
+            // faceRecognizer.getLabelInfo(0).getString();
 
-              databaseAccess.close();
-          }
-      } // End of prediction.
+            // Display the information for the matching image.
+            tv.setText(
+                    "Match found:" + personName +
+                            "\n Acceptance Level: " + acceptanceLevel +
+                            "\nPerson ID: " + personId +
+                            "\nPrediction Id: " + prediction
+            );
+            matchText = tv.getText().toString();
 
-      new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-          @Override
-          public void run() {
-              notifications();
-          }
-      }, 2000);
+            if (personId >= 1) {
+                DatabaseAccess databaseAccess = DatabaseAccess.getInstance(getApplicationContext());
+                databaseAccess.open();
 
-  }
+                info = databaseAccess.getInformation(personId);
+                result_information.setText(info);
+                moreInfo = result_information.getText().toString();
+
+
+                databaseAccess.close();
+            }
+        } // End of prediction.
+
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                notifications();
+            }
+        }, 2000);
+
+    }
 
 
 
