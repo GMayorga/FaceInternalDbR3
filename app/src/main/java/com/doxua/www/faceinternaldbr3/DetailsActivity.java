@@ -29,11 +29,6 @@ public class DetailsActivity extends AppCompatActivity {
         Log.d("PLAYGROUND", "Details ID: " + getIntent().getIntExtra("EXTRA_DETAILS_ID", -1));
 
 
-        imageView = (ImageView) findViewById(R.id.imageView);
-        tv = (TextView) findViewById(R.id.predict_faces);
-        result_information = (TextView)findViewById(R.id.result);
-
-        Log.d ("notification id", "ID again");
 
         menuButton();
     }

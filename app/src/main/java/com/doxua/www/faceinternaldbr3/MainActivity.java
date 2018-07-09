@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
         // Create the image view and text view.
         imageView = (ImageView) findViewById(R.id.imageView);
         tv = (TextView) findViewById(R.id.predict_faces);
-        result_information = (TextView)findViewById(R.id.result);
+        result_information = (TextView) findViewById(R.id.result);
 
         // Pick an image and recognize.
         Button pickImageButton = (Button) findViewById(R.id.btnGallery);
@@ -116,20 +116,18 @@ public class MainActivity extends AppCompatActivity {
 
         mPermissionReady = cameraPermission == PackageManager.PERMISSION_GRANTED && storagePermission == PackageManager.PERMISSION_GRANTED;
 
-        if (!mPermissionReady){
+        if (!mPermissionReady) {
             requirePermissions();
 
         }
 
+            instance = this;
 
-        instance = this;
+            directoryFileObserver = new GalleryObserver("/storage/emulated/0/MyGlass/");
+            directoryFileObserver.startWatching();
 
-        directoryFileObserver = new GalleryObserver("/storage/emulated/0/MyGlass/");
-        directoryFileObserver.startWatching();
-
-        lastPhotoInGallery();
+            lastPhotoInGallery();
     }
-
 
     private void openGallery() {
         Intent gallery =
@@ -213,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
         //This is used to open the new screen when the notification is clicked on the phone:
 
         Intent detailsIntent = new Intent(MainActivity.this, DetailsActivity.class);
-        detailsIntent.putExtra("EXTRA_DETAILS_ID", NOTIFICATION_ID);
+        detailsIntent.putExtra("EXTRA_DETAILS_ID", 1);
         PendingIntent detailsPendingIntent = PendingIntent.getActivity(MainActivity.this, NOTIFICATION_ID, detailsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
 
@@ -328,6 +326,12 @@ public class MainActivity extends AppCompatActivity {
         if (numFaces > 0) {
 
             recognize(faces.get(0), greyMat, tv);
+                    }
+                    else{
+            tv.setText("Unknown. No Face Found");
+            matchText = tv.getText().toString();
+            notifications();
+
 
         }
     }
